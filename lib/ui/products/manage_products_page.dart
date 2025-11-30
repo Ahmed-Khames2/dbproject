@@ -1,5 +1,6 @@
 import '../../models/product.dart';
 import 'add_edit_product_page.dart';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import '../../blocs/product_cubit.dart';
 import '../../blocs/product_state.dart';
@@ -61,6 +62,8 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
             onPressed: () async {
               Navigator.of(context).pop();
               await context.read<ProductCubit>().deleteProduct(productId);
+              // Refresh the products list after deletion
+              context.read<ProductCubit>().fetchAllProducts();
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(const SnackBar(content: Text('Product deleted')));
@@ -78,10 +81,18 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
       appBar: AppBar(title: const Text('Manage Products')),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.of(context).push(
+          final result = await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const AddEditProductPage()),
           );
-          context.read<ProductCubit>().fetchAllProducts();
+          // Only refresh if navigation was successful (item was created)
+          if (result == true || result == null) {
+            try {
+              await context.read<ProductCubit>().fetchAllProducts();
+            } catch (e) {
+              // Silently handle refresh errors
+              debugPrint('Failed to refresh products: $e');
+            }
+          }
         },
         child: const Icon(Icons.add),
       ),
@@ -125,7 +136,10 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
                             AddEditProductPage(product: product),
                       ),
                     );
-                    setState(() {});
+                    // Refresh the products list after editing (if widget is still mounted)
+                    if (mounted) {
+                      context.read<ProductCubit>().fetchAllProducts();
+                    }
                   },
                   onDelete: () => _deleteProduct(product.productId),
                 );

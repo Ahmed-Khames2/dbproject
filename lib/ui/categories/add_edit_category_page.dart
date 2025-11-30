@@ -4,7 +4,6 @@ import '../../blocs/category_cubit.dart';
 import '../../widgets/form_elements.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 class AddEditCategoryPage extends StatefulWidget {
   final CategoryModel? category;
 
@@ -57,9 +56,9 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: _selectedImageIndex == index + 1 
-                        ? Theme.of(context).colorScheme.primary 
-                        : Colors.grey,
+                      color: _selectedImageIndex == index + 1
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey,
                       width: _selectedImageIndex == index + 1 ? 3 : 1,
                     ),
                     borderRadius: BorderRadius.circular(8),
@@ -77,7 +76,10 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
         ],
       ),
     );
@@ -89,23 +91,35 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
       final category = CategoryModel(
         categoryId: widget.category?.categoryId ?? 0,
         categoryName: _nameController.text,
-        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        description: _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text,
       );
 
       try {
         if (widget.category == null) {
           await context.read<CategoryCubit>().createCategory(category);
         } else {
-          await context.read<CategoryCubit>().updateCategory(widget.category!.categoryId, category);
+          await context.read<CategoryCubit>().updateCategory(
+            widget.category!.categoryId,
+            category,
+          );
         }
         if (!mounted) return;
         // Refresh the categories list in the parent page
         context.read<CategoryCubit>().fetchAllCategories();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Category saved successfully')));
-        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Category saved successfully')),
+        );
+        // Only pop for new categories, stay on page for updates
+        if (widget.category == null) {
+          Navigator.of(context).pop();
+        }
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حدث خطأ أثناء حفظ الفئة')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('حدث خطأ أثناء حفظ الفئة')),
+        );
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -134,7 +148,9 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(60),
                     image: DecorationImage(
-                      image: NetworkImage('https://picsum.photos/seed/category${_selectedImageIndex}/200/200.jpg'),
+                      image: NetworkImage(
+                        'https://picsum.photos/seed/category${_selectedImageIndex}/200/200.jpg',
+                      ),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -154,10 +170,7 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
                         const SizedBox(height: 4),
                         Text(
                           'Tap to change',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 10),
                         ),
                       ],
                     ),
@@ -168,7 +181,8 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
               CustomTextField(
                 label: 'Category Name',
                 controller: _nameController,
-                validator: (value) => value!.isEmpty ? 'Category name is required' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Category name is required' : null,
               ),
               const SizedBox(height: 16),
               CustomTextField(
@@ -179,7 +193,9 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _isLoading ? null : _saveCategory,
-                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                ),
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,

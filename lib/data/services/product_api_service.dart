@@ -28,7 +28,10 @@ class ProductApiService {
 
   Future<ProductModel> createProduct(ProductModel product) async {
     try {
-      final response = await _apiService.post('/products', data: product.toJsonForCreate());
+      final response = await _apiService.post(
+        '/products',
+        data: product.toJsonForCreate(),
+      );
       return ProductModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to create product: $e');
@@ -37,7 +40,10 @@ class ProductApiService {
 
   Future<ProductModel> updateProduct(int id, ProductModel product) async {
     try {
-      final response = await _apiService.put('/products/$id', data: product.toJson());
+      final response = await _apiService.put(
+        '/products/$id',
+        data: product.toJsonForUpdate(),
+      );
       return ProductModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to update product: $e');

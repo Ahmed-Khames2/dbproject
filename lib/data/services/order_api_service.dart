@@ -37,7 +37,10 @@ class OrderApiService {
 
   Future<OrderModel> updateOrder(int id, OrderModel order) async {
     try {
-      final response = await _apiService.put('/orders/$id', data: order.toJson());
+      final response = await _apiService.put(
+        '/orders/$id',
+        data: order.toJsonForUpdate(),
+      );
       return OrderModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to update order: $e');

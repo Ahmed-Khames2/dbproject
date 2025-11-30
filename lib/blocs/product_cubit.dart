@@ -36,6 +36,7 @@ class ProductCubit extends Cubit<ProductState> {
     try {
       final createdProduct = await _productRepository.createProduct(product);
       emit(ProductLoaded(createdProduct));
+      // Don't auto-refresh here, let UI handle it
     } catch (e) {
       emit(ProductError(e.toString()));
     }
@@ -46,6 +47,7 @@ class ProductCubit extends Cubit<ProductState> {
     try {
       final updatedProduct = await _productRepository.updateProduct(id, product);
       emit(ProductLoaded(updatedProduct));
+      await fetchAllProducts(); // Refresh the list
     } catch (e) {
       emit(ProductError(e.toString()));
     }

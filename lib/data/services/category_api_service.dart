@@ -28,7 +28,7 @@ class CategoryApiService {
 
   Future<CategoryModel> createCategory(CategoryModel category) async {
     try {
-      final response = await _apiService.post('/categories', data: category.toJson());
+      final response = await _apiService.post('/categories', data: category.toJsonForCreate());
       return CategoryModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to create category: $e');
@@ -37,7 +37,7 @@ class CategoryApiService {
 
   Future<CategoryModel> updateCategory(int id, CategoryModel category) async {
     try {
-      final response = await _apiService.put('/categories/$id', data: category.toJson());
+      final response = await _apiService.put('/categories/$id', data: category.toJsonForUpdate());
       return CategoryModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to update category: $e');

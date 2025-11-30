@@ -114,6 +114,10 @@ class _ManageCategoriesPageState extends State<ManageCategoriesPage> {
                         builder: (context) => AddEditCategoryPage(category: category),
                       ),
                     );
+                    // Refresh the categories list after editing (if widget is still mounted)
+                    if (mounted) {
+                      context.read<CategoryCubit>().fetchAllCategories();
+                    }
                   },
                   onDelete: () => _deleteCategory(category.categoryId),
                 );

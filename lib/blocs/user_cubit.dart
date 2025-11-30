@@ -36,6 +36,7 @@ class UserCubit extends Cubit<UserState> {
     try {
       final createdUser = await _userRepository.createUser(user);
       emit(UserLoaded(createdUser));
+      // Don't auto-refresh here, let UI handle it
     } catch (e) {
       emit(UserError(e.toString()));
     }
@@ -46,6 +47,7 @@ class UserCubit extends Cubit<UserState> {
     try {
       final updatedUser = await _userRepository.updateUser(id, user);
       emit(UserLoaded(updatedUser));
+      await fetchAllUsers(); // Refresh the list
     } catch (e) {
       emit(UserError(e.toString()));
     }

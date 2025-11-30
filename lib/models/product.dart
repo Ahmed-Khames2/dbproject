@@ -52,6 +52,17 @@ class ProductModel {
     };
   }
 
+  Map<String, dynamic> toJsonForUpdate() {
+    return {
+      'CategoryID': categoryId,
+      'Name': name,
+      'Description': description,
+      'Price': price,
+      'Stock': stock,
+      'ImageURL': imageUrl,
+    };
+  }
+
   ProductModel copyWith({
     int? productId,
     int? categoryId,

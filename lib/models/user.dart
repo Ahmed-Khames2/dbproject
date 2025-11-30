@@ -45,6 +45,34 @@ class UserModel {
     };
   }
 
+  Map<String, dynamic> toJsonForCreate() {
+    return {
+      'FullName': fullName,
+      'Email': email,
+      'Password': password,
+      'Role': role,
+      'Phone': phone,
+      'Address': address,
+    };
+  }
+
+  Map<String, dynamic> toJsonForUpdate() {
+    final Map<String, dynamic> data = {
+      'FullName': fullName,
+      'Email': email,
+      'Role': role,
+      'Phone': phone,
+      'Address': address,
+    };
+
+    // Only include password if it's not empty (for updates)
+    if (password.isNotEmpty) {
+      data['Password'] = password;
+    }
+
+    return data;
+  }
+
   UserModel copyWith({
     int? userId,
     String? fullName,

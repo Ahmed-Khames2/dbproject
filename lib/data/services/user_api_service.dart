@@ -28,7 +28,7 @@ class UserApiService {
 
   Future<UserModel> createUser(UserModel user) async {
     try {
-      final response = await _apiService.post('/users', data: user.toJson());
+      final response = await _apiService.post('/users', data: user.toJsonForCreate());
       return UserModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to create user: $e');
@@ -37,7 +37,7 @@ class UserApiService {
 
   Future<UserModel> updateUser(int id, UserModel user) async {
     try {
-      final response = await _apiService.put('/users/$id', data: user.toJson());
+      final response = await _apiService.put('/users/$id', data: user.toJsonForUpdate());
       return UserModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to update user: $e');

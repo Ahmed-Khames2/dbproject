@@ -36,6 +36,7 @@ class CategoryCubit extends Cubit<CategoryState> {
     try {
       final createdCategory = await _categoryRepository.createCategory(category);
       emit(CategoryLoaded(createdCategory));
+      await fetchAllCategories(); // Refresh the list
     } catch (e) {
       emit(CategoryError(e.toString()));
     }
@@ -46,6 +47,7 @@ class CategoryCubit extends Cubit<CategoryState> {
     try {
       final updatedCategory = await _categoryRepository.updateCategory(id, category);
       emit(CategoryLoaded(updatedCategory));
+      await fetchAllCategories(); // Refresh the list
     } catch (e) {
       emit(CategoryError(e.toString()));
     }

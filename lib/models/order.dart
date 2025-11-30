@@ -33,6 +33,12 @@ class OrderModel {
     };
   }
 
+  Map<String, dynamic> toJsonForUpdate() {
+    return {
+      'Status': status,
+    };
+  }
+
   OrderModel copyWith({
     int? orderId,
     int? userId,

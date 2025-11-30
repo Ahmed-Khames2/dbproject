@@ -36,6 +36,7 @@ class OrderCubit extends Cubit<OrderState> {
     try {
       final createdOrder = await _orderRepository.createOrder(order);
       emit(OrderLoaded(createdOrder));
+      await fetchAllOrders(); // Refresh the list
     } catch (e) {
       emit(OrderError(e.toString()));
     }
@@ -46,6 +47,7 @@ class OrderCubit extends Cubit<OrderState> {
     try {
       final updatedOrder = await _orderRepository.updateOrder(id, order);
       emit(OrderLoaded(updatedOrder));
+      await fetchAllOrders(); // Refresh the list
     } catch (e) {
       emit(OrderError(e.toString()));
     }
