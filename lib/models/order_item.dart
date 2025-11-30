@@ -15,11 +15,11 @@ class OrderItemModel {
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     return OrderItemModel(
-      orderItemId: json['OrderItemID'],
-      orderId: json['OrderID'],
-      productId: json['ProductID'],
-      quantity: json['Quantity'],
-      unitPrice: json['UnitPrice'].toDouble(),
+      orderItemId: json['OrderItemID'] as int,
+      orderId: json['OrderID'] as int,
+      productId: json['ProductID'] as int,
+      quantity: json['Quantity'] as int,
+      unitPrice: (json['UnitPrice'] as num?)?.toDouble() ?? 0.0,
     );
   }
 

@@ -1,5 +1,4 @@
 import 'api_service.dart';
-import 'package:dio/dio.dart';
 import '../../models/product.dart';
 
 class ProductApiService {

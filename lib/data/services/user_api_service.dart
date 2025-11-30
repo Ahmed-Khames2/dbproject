@@ -1,5 +1,4 @@
 import 'api_service.dart';
-import 'package:dio/dio.dart';
 import '../../models/user.dart';
 
 class UserApiService {
@@ -28,7 +27,10 @@ class UserApiService {
 
   Future<UserModel> createUser(UserModel user) async {
     try {
-      final response = await _apiService.post('/users', data: user.toJsonForCreate());
+      final response = await _apiService.post(
+        '/users',
+        data: user.toJsonForCreate(),
+      );
       return UserModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to create user: $e');
@@ -37,7 +39,10 @@ class UserApiService {
 
   Future<UserModel> updateUser(int id, UserModel user) async {
     try {
-      final response = await _apiService.put('/users/$id', data: user.toJsonForUpdate());
+      final response = await _apiService.put(
+        '/users/$id',
+        data: user.toJsonForUpdate(),
+      );
       return UserModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to update user: $e');

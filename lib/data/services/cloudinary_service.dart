@@ -1,5 +1,5 @@
-import 'dart:io';
 import '../consr.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 
@@ -20,7 +20,7 @@ class CloudinaryService {
       );
       return response.secureUrl;
     } catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
       return null;
     }
   }
@@ -35,7 +35,7 @@ class CloudinaryService {
       );
       return response.secureUrl;
     } catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
       return null;
     }
   }

@@ -1,14 +1,22 @@
 import '../../models/product.dart';
+import '../../models/category.dart';
 import 'add_edit_product_page.dart';
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import '../../blocs/product_cubit.dart';
 import '../../blocs/product_state.dart';
+import '../../blocs/category_cubit.dart';
+import '../../blocs/category_state.dart';
 import '../../widgets/form_elements.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-String getCategoryName(int categoryId) {
-  return 'Category $categoryId'; // TODO: Fetch categories and map
+String getCategoryName(int categoryId, List<CategoryModel> categories) {
+  try {
+    return categories
+        .firstWhere((cat) => cat.categoryId == categoryId)
+        .categoryName;
+  } catch (e) {
+    return 'Category $categoryId';
+  }
 }
 
 class ManageProductsPage extends StatefulWidget {
@@ -21,13 +29,16 @@ class ManageProductsPage extends StatefulWidget {
 class _ManageProductsPageState extends State<ManageProductsPage> {
   List<ProductModel> allProducts = [];
   List<ProductModel> filteredProducts = [];
+  List<CategoryModel> categories = [];
+  int? selectedCategoryFilter;
   final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    searchController.addListener(_onSearchChanged);
+    searchController.addListener(_applyFilters);
     context.read<ProductCubit>().fetchAllProducts();
+    context.read<CategoryCubit>().fetchAllCategories();
   }
 
   @override
@@ -36,15 +47,25 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    setState(() {
-      final query = searchController.text.toLowerCase();
-      filteredProducts = allProducts.where((product) {
-        return product.name.toLowerCase().contains(query) ||
-            product.description?.toLowerCase().contains(query) == true ||
-            getCategoryName(product.categoryId).toLowerCase().contains(query);
-      }).toList();
-    });
+  void _applyFilters() {
+    final query = searchController.text.toLowerCase();
+    filteredProducts = allProducts.where((product) {
+      // Apply search filter
+      bool matchesSearch =
+          product.name.toLowerCase().contains(query) ||
+          product.description?.toLowerCase().contains(query) == true ||
+          getCategoryName(
+            product.categoryId,
+            categories,
+          ).toLowerCase().contains(query);
+
+      // Apply category filter
+      bool matchesCategory =
+          selectedCategoryFilter == null ||
+          product.categoryId == selectedCategoryFilter;
+
+      return matchesSearch && matchesCategory;
+    }).toList();
   }
 
   void _deleteProduct(int productId) {
@@ -62,11 +83,10 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
             onPressed: () async {
               Navigator.of(context).pop();
               await context.read<ProductCubit>().deleteProduct(productId);
-              // Refresh the products list after deletion
-              context.read<ProductCubit>().fetchAllProducts();
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Product deleted')));
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Product deleted successfully')),
+              );
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -81,78 +101,136 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
       appBar: AppBar(title: const Text('Manage Products')),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final result = await Navigator.of(context).push(
+          await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const AddEditProductPage()),
           );
-          // Only refresh if navigation was successful (item was created)
-          if (result == true || result == null) {
-            try {
-              await context.read<ProductCubit>().fetchAllProducts();
-            } catch (e) {
-              // Silently handle refresh errors
-              debugPrint('Failed to refresh products: $e');
-            }
-          }
         },
         child: const Icon(Icons.add),
       ),
-      body: BlocBuilder<ProductCubit, ProductState>(
-        builder: (context, state) {
-          if (state is ProductLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ProductsLoaded) {
-            allProducts = state.products;
-            filteredProducts = allProducts.where((product) {
-              final query = searchController.text.toLowerCase();
-              return product.name.toLowerCase().contains(query) ||
-                  product.description?.toLowerCase().contains(query) == true ||
-                  getCategoryName(
-                    product.categoryId,
-                  ).toLowerCase().contains(query);
-            }).toList();
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SearchBarWidget(
-                    controller: searchController,
-                    hintText:
-                        'Search products by name, description, or category...',
-                  ),
-                ),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: filteredProducts.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final product = filteredProducts[index];
-                return ProductListItem(
-                  product: product,
-                  onEdit: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AddEditProductPage(product: product),
-                      ),
-                    );
-                    // Refresh the products list after editing (if widget is still mounted)
-                    if (mounted) {
-                      context.read<ProductCubit>().fetchAllProducts();
-                    }
-                  },
-                  onDelete: () => _deleteProduct(product.productId),
-                );
-              },
-            ),
-          ),
-              ],
-            );
-          } else if (state is ProductError) {
-            return Center(child: Text('حدث خطأ: ${state.message}'));
-          } else {
-            return const Center(child: Text('No data'));
+      body: BlocBuilder<CategoryCubit, CategoryState>(
+        builder: (context, categoryState) {
+          if (categoryState is CategoriesLoaded) {
+            categories = categoryState.categories;
           }
+          return BlocBuilder<ProductCubit, ProductState>(
+            builder: (context, productState) {
+              if (productState is ProductLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (productState is ProductsLoaded) {
+                allProducts = productState.products;
+                _applyFilters();
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          // Category Filter Chips
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0),
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: FilterChip(
+                                      label: const Text(
+                                        'All',
+                                        style: TextStyle(color: Colors.cyan),
+                                      ),
+                                      selected: selectedCategoryFilter == null,
+                                      onSelected: (selected) {
+                                        setState(() {
+                                          selectedCategoryFilter = null;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  ...categories.map((category) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
+                                      child: FilterChip(
+                                        label: Text(
+                                          category.categoryName,
+                                          style: TextStyle(color: Colors.cyan),
+                                        ),
+                                        selected:
+                                            selectedCategoryFilter ==
+                                            category.categoryId,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            selectedCategoryFilter = selected
+                                                ? category.categoryId
+                                                : null;
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Search Bar
+                          SearchBarWidget(
+                            controller: searchController,
+                            hintText:
+                                'Search products by name, description, or category...',
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: filteredProducts.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No products found',
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                              ),
+                              itemCount: filteredProducts.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(),
+                              itemBuilder: (context, index) {
+                                final product = filteredProducts[index];
+                                return ProductListItem(
+                                  product: product,
+                                  categoryName: getCategoryName(
+                                    product.categoryId,
+                                    categories,
+                                  ),
+                                  onEdit: () async {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AddEditProductPage(
+                                              product: product,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                  onDelete: () =>
+                                      _deleteProduct(product.productId),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                );
+              } else if (productState is ProductError) {
+                return Center(child: Text('حدث خطأ: ${productState.message}'));
+              } else {
+                return const Center(child: Text('No data'));
+              }
+            },
+          );
         },
       ),
     );
@@ -161,12 +239,14 @@ class _ManageProductsPageState extends State<ManageProductsPage> {
 
 class ProductListItem extends StatelessWidget {
   final ProductModel product;
+  final String categoryName;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const ProductListItem({
     super.key,
     required this.product,
+    required this.categoryName,
     required this.onEdit,
     required this.onDelete,
   });
@@ -180,12 +260,10 @@ class ProductListItem extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // If width is less than 400, stack the elements vertically
             if (constraints.maxWidth < 400) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Image and title row
                   Row(
                     children: [
                       ClipRRect(
@@ -238,7 +316,6 @@ class ProductListItem extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Details
                   Row(
                     children: [
                       Expanded(
@@ -254,7 +331,7 @@ class ProductListItem extends StatelessWidget {
                         child: _buildDetailChip(
                           context,
                           Icons.category_outlined,
-                          getCategoryName(product.categoryId),
+                          categoryName,
                         ),
                       ),
                     ],
@@ -271,7 +348,6 @@ class ProductListItem extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 12),
-                  // Action buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -294,7 +370,6 @@ class ProductListItem extends StatelessWidget {
                 ],
               );
             } else {
-              // For larger screens, use a horizontal layout
               return Row(
                 children: [
                   ClipRRect(
@@ -355,7 +430,7 @@ class ProductListItem extends StatelessWidget {
                             _buildDetailChip(
                               context,
                               Icons.category_outlined,
-                              getCategoryName(product.categoryId),
+                              categoryName,
                             ),
                           ],
                         ),
@@ -374,7 +449,6 @@ class ProductListItem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Action buttons
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

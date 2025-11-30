@@ -9,7 +9,6 @@ import '../../widgets/form_elements.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/services/cloudinary_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class AddEditProductPage extends StatefulWidget {
   final ProductModel? product;
@@ -155,7 +154,11 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         // Refresh the products list in the parent page
         context.read<ProductCubit>().fetchAllProducts();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Product ${widget.product == null ? 'created' : 'updated'} successfully')),
+          SnackBar(
+            content: Text(
+              'Product ${widget.product == null ? 'created' : 'updated'} successfully',
+            ),
+          ),
         );
         // Only pop for new products, stay on page for updates
         if (widget.product == null) {
@@ -164,7 +167,11 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ أثناء ${widget.product == null ? 'إنشاء' : 'تحديث'} المنتج: $e')),
+          SnackBar(
+            content: Text(
+              'حدث خطأ أثناء ${widget.product == null ? 'إنشاء' : 'تحديث'} المنتج: $e',
+            ),
+          ),
         );
       } finally {
         if (mounted) setState(() => _isUploadingImage = false);

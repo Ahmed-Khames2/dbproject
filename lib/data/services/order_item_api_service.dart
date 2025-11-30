@@ -1,5 +1,4 @@
 import 'api_service.dart';
-import 'package:dio/dio.dart';
 import '../../models/order_item.dart';
 
 class OrderItemApiService {
@@ -28,16 +27,25 @@ class OrderItemApiService {
 
   Future<OrderItemModel> createOrderItem(OrderItemModel orderItem) async {
     try {
-      final response = await _apiService.post('/order-items', data: orderItem.toJson());
+      final response = await _apiService.post(
+        '/order-items',
+        data: orderItem.toJson(),
+      );
       return OrderItemModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to create order item: $e');
     }
   }
 
-  Future<OrderItemModel> updateOrderItem(int id, OrderItemModel orderItem) async {
+  Future<OrderItemModel> updateOrderItem(
+    int id,
+    OrderItemModel orderItem,
+  ) async {
     try {
-      final response = await _apiService.put('/order-items/$id', data: orderItem.toJson());
+      final response = await _apiService.put(
+        '/order-items/$id',
+        data: orderItem.toJson(),
+      );
       return OrderItemModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to update order item: $e');

@@ -1,7 +1,5 @@
-import '../../models/user.dart';
 import 'user_details_page.dart';
 import 'add_edit_user_page.dart';
-import 'dart:developer' as developer;
 import '../../blocs/user_cubit.dart';
 import '../../blocs/user_state.dart';
 import 'package:flutter/material.dart';
@@ -122,17 +120,21 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                   PopupMenuButton<String>(
                                     onSelected: (value) {
                                       if (value == 'edit') {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                AddEditUserPage(user: user),
-                                          ),
-                                        ).then((_) {
-                                          // Refresh the users list after editing (if widget is still mounted)
-                                          if (mounted) {
-                                            context.read<UserCubit>().fetchAllUsers();
-                                          }
-                                        });
+                                        Navigator.of(context)
+                                            .push(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddEditUserPage(user: user),
+                                              ),
+                                            )
+                                            .then((_) {
+                                              // Refresh the users list after editing (if widget is still mounted)
+                                              if (mounted) {
+                                                context
+                                                    .read<UserCubit>()
+                                                    .fetchAllUsers();
+                                              }
+                                            });
                                       } else if (value == 'delete') {
                                         _deleteUser(user.userId);
                                       }
@@ -202,17 +204,21 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                     IconButton(
                                       icon: const Icon(Icons.edit),
                                       onPressed: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                AddEditUserPage(user: user),
-                                          ),
-                                        ).then((_) {
-                                          // Refresh the users list after editing (if widget is still mounted)
-                                          if (mounted) {
-                                            context.read<UserCubit>().fetchAllUsers();
-                                          }
-                                        });
+                                        Navigator.of(context)
+                                            .push(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddEditUserPage(user: user),
+                                              ),
+                                            )
+                                            .then((_) {
+                                              // Refresh the users list after editing (if widget is still mounted)
+                                              if (mounted) {
+                                                context
+                                                    .read<UserCubit>()
+                                                    .fetchAllUsers();
+                                              }
+                                            });
                                       },
                                       tooltip: 'Edit',
                                     ),
